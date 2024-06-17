@@ -5,6 +5,7 @@ import socket
 
 QUIT = False
 IPV4_NET = []
+PORTS = []
 OUT_FILE_HOSTS = ''
 OUT_FILE_PORTS = ''
 OUT_FILE_HOSTS_PORTS = ''
@@ -245,6 +246,18 @@ def print_output(type, output=''):
     except Exception as ex:
         print(colours.RED + ex + colours.NONE)
 
+def menu_use_existing_ipv4net_as_input():
+    try:
+        blnUseExistingNet = False
+        useExistingNet = ''
+        while useExistingNet not in ['y', 'n']:
+            ipv4Net = ', '.join(map(str, IPV4_NET))
+            useExistingNet = input('\nUse existing IPvNet (' + ipv4Net + ') as input for port scan? [y/n]: ').strip().lower()
+        blnUseExistingNet = (useExistingNet == 'y')
+        return blnUseExistingNet
+    except Exception as ex:
+        print_output('error', ex)
+
 def menu_get_ipv4Net():
     try:
         ipMethod = ''
@@ -328,15 +341,15 @@ def menu_skip_unknown():
     except Exception as ex:
         print_output('error', ex)
 
-def menu_use_existing_ipv4net_as_input():
+def menu_use_existing_ports_as_input():
     try:
-        blnUseExistingNet = False
-        useExistingNet = ''
-        while useExistingNet not in ['y', 'n']:
-            ipv4Net = ', '.join(map(str, IPV4_NET))
-            useExistingNet = input('\nUse existing IPvNet (' + ipv4Net + ') as input for port scan? [y/n]: ').strip().lower()
-        blnUseExistingNet = (useExistingNet == 'y')
-        return blnUseExistingNet
+        blnUseExistingPorts = False
+        useExistingPorts = ''
+        while useExistingPorts not in ['y', 'n']:
+            ipv4Net = ', '.join(map(str, PORTS))
+            useExistingPorts = input('\nUse existing ports (' + ipv4Net + ') as input for port scan? [y/n]: ').strip().lower()
+        blnUseExistingPorts = (useExistingPorts == 'y')
+        return blnUseExistingPorts
     except Exception as ex:
         print_output('error', ex)
 
@@ -358,6 +371,8 @@ def menu_get_port_numbers():
                     blnError = False
         prt = ', '.join(map(str, ports))
         print_output('valid', prt)
+        global PORTS
+        PORTS = ports
         return ports
     except Exception as ex:
         print_output('error', ex)
@@ -399,7 +414,11 @@ def menu_option_2():
             outputFile = ''
         global OUT_FILE_PORTS
         OUT_FILE_PORTS = outputFile
-        ports = menu_get_port_numbers()
+        if (len(PORTS) > 0):
+            blnUseExistingPorts = menu_use_existing_ports_as_input()
+            ports = (PORTS if blnUseExistingPorts else menu_get_port_numbers())
+        else:
+            ports = menu_get_port_numbers()
         determine_open_ports(ports, outputType, outputFile, ipv4Net)
     except Exception as ex:
         print_output('error', ex)
@@ -421,7 +440,11 @@ def menu_option_3():
         global OUT_FILE_HOSTS_PORTS
         OUT_FILE_HOSTS_PORTS = outputFile
         blnSkipUnknown = menu_skip_unknown()
-        ports = menu_get_port_numbers()
+        if (len(PORTS) > 0):
+            blnUseExistingPorts = menu_use_existing_ports_as_input()
+            ports = (PORTS if blnUseExistingPorts else menu_get_port_numbers())
+        else:
+            ports = menu_get_port_numbers()
         determine_host_names_open_ports(ipv4Net, ports, outputType, outputFile, blnSkipUnknown)
     except Exception as ex:
         print_output('error', ex)
