@@ -254,6 +254,7 @@ def menu_use_existing_ipv4net_as_input():
             ipv4Net = ', '.join(map(str, IPV4_NET))
             useExistingNet = input('\nUse existing IPvNet (' + ipv4Net + ') as input for port scan? [y/n]: ').strip().lower()
         blnUseExistingNet = (useExistingNet == 'y')
+        if blnUseExistingNet: print_output('valid', ipv4Net)
         return blnUseExistingNet
     except Exception as ex:
         print_output('error', ex)
@@ -346,9 +347,10 @@ def menu_use_existing_ports_as_input():
         blnUseExistingPorts = False
         useExistingPorts = ''
         while useExistingPorts not in ['y', 'n']:
-            ipv4Net = ', '.join(map(str, PORTS))
-            useExistingPorts = input('\nUse existing ports (' + ipv4Net + ') as input for port scan? [y/n]: ').strip().lower()
+            ports = ', '.join(map(str, PORTS))
+            useExistingPorts = input('\nUse existing ports (' + ports + ') as input for port scan? [y/n]: ').strip().lower()
         blnUseExistingPorts = (useExistingPorts == 'y')
+        if blnUseExistingPorts: print_output('valid', ports)
         return blnUseExistingPorts
     except Exception as ex:
         print_output('error', ex)
