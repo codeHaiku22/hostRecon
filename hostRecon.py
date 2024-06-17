@@ -469,7 +469,7 @@ def main_menu():
             menu_option_2()
         elif (menuOption == '3'):
             menu_option_3()
-        elif (menuOption in ('4', 'q', 'Q')):
+        elif (menuOption in ('4', 'q')):
             menu_option_4()
     except Exception as ex:
         print_output('error', ex)
