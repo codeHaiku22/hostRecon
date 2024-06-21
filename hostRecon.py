@@ -132,7 +132,7 @@ def determine_host_names_open_ports(ipv4Net, ports, outputType, outputFile = '',
                     if (hostName.lower() != 'unknown'): fnd += 1
                 i += 1
         addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
-        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(i) + ' host names found')
+        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(fnd) + ' host names found')
         print_output('info', '\nScan complete: ' + addressesMsg + ' | ' + hostsMsg)
         if blnOutFile: print_output('info', '  Output file: ' + outputFile)
     except Exception as ex:
@@ -158,7 +158,7 @@ def determine_host_names(ipv4Net, outputType, outputFile = '', blnSkipUnknown = 
                     if (hostName.lower() != 'unknown'): fnd += 1
                 i += 1
         addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
-        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(i) + ' host names found')
+        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(fnd) + ' host names found')
         print_output('info', '\nScan complete: ' + addressesMsg + ' | ' + hostsMsg)
         if blnOutFile: print_output('info', '  Output file: ' + outputFile)
     except Exception as ex:
