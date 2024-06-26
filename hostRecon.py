@@ -5,6 +5,7 @@ import socket
 
 QUIT = False
 IPV4_NET = []
+INPUT_FILE = ''
 PORTS = []
 OUT_FILE_HOSTS = ''
 OUT_FILE_PORTS = ''
@@ -12,7 +13,7 @@ OUT_FILE_HOSTS_PORTS = ''
 
 class application:
     NAME = 'hostRecon'
-    VERSION = '1.0'
+    VERSION = '1.1'
 
 class colours:
     BGBLACK = '\033[40m'
@@ -43,6 +44,12 @@ class colours:
 def validate_directory(directory):
     try:
         return (os.path.isdir(directory))
+    except Exception as ex:
+        return False
+
+def validate_file(file):
+    try:
+        return (os.path.isfile(file))
     except Exception as ex:
         return False
 
@@ -89,6 +96,21 @@ def generate_ipv4_network_IP(begIpAddress, endIpAddress):
     except Exception as ex:
         print_output('error', ex)
 
+def generate_ipAddress_List(ipv4Net = [], inputFile = ''):
+    try:
+        ipAddresses = []
+        if len(ipv4Net > 0):
+            for net in ipv4Net:
+                for ipa in ipaddress.IPv4Network(net):
+                    ipAddresses.append(str(ipa))
+        if (inputFile != ''):
+            with open(input, 'r') as inputFile:
+                for line in inputFile:
+                    ipAddresses.append(line.strip().removesuffix('\n'))
+        return ipAddresses
+    except Exception as ex:
+        print_output('error', ex)
+
 def get_hostName_by_ip(ipAddress):
     try:
         hostName = socket.gethostbyaddr(ipAddress)[0]
@@ -106,88 +128,82 @@ def get_port_status(ipAddress, port):
     finally:
         return blnOpen
 
-def determine_host_names_open_ports(ipv4Net, ports, outputType, outputFile = '', blnSkipUnknown = True):
+def determine_host_names_open_ports(ipAddresses, ports, outputType, outputFile = '', blnSkipUnknown = True):
     try:
         blnOutFile = (outputFile != '')
         blnOutScreen = (outputType != 'f')
         if blnOutFile: fileOut = open(outputFile, 'a')
         if blnOutScreen: generate_screen_results(ports=ports, blnShowHostName=True, blnHeader=True)
         i, fnd = 0, 0
-        for net in ipv4Net:
-            for ipa in ipaddress.IPv4Network(net):
-                portsStatus = []
-                ipAddress = str(ipa)
-                if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress)
-                hostName = get_hostName_by_ip(ipAddress)
-                if (hostName.lower() != 'unknown') or ((hostName.lower() == 'unknown') and not blnSkipUnknown):
-                    openPorts = ''
-                    for port in ports:
-                        if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress + ':' + str(port))
-                        portOpen = get_port_status(ipAddress, port)
-                        openPorts += (str(port) + ',' if portOpen else ',')
-                        portsStatus.append(str(port) + '=open' if portOpen else str(port) + '=closed')
-                    openPorts = openPorts.removesuffix(',')
-                    if blnOutFile: fileOut.write(ipAddress + ',' + hostName + ',' + openPorts + '\n')
-                    if blnOutScreen: generate_screen_results(ipAddress, hostName, portsStatus, blnShowHostName=True, blnHeader=False)
-                    if (hostName.lower() != 'unknown'): fnd += 1
-                i += 1
-        addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
-        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(fnd) + ' host names found')
-        print_output('info', '\nScan complete: ' + addressesMsg + ' | ' + hostsMsg)
-        if blnOutFile: print_output('info', '  Output file: ' + outputFile)
-    except Exception as ex:
-        print_output('error', ex)
-    finally:
-        if ('fileOut' in locals() and blnOutFile): fileOut.close()
-
-def determine_host_names(ipv4Net, outputType, outputFile = '', blnSkipUnknown = True):
-    try:
-        blnOutFile = (outputFile != '')
-        blnOutScreen = (outputType != 'f')
-        if blnOutFile: fileOut = open(outputFile, 'a')
-        if blnOutScreen: generate_screen_results(blnShowHostName=True, blnHeader=True)
-        i, fnd = 0, 0
-        for net in ipv4Net:
-            for ipa in ipaddress.IPv4Network(net):
-                ipAddress = str(ipa)
-                if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress)
-                hostName = get_hostName_by_ip(ipAddress)
-                if (hostName.lower() != 'unknown') or ((hostName.lower() == 'unknown') and not blnSkipUnknown):
-                    if blnOutFile: fileOut.write(ipAddress + ',' + hostName + '\n')
-                    if blnOutScreen: generate_screen_results(ipAddress, hostName, blnShowHostName=True, blnHeader=False)
-                    if (hostName.lower() != 'unknown'): fnd += 1
-                i += 1
-        addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
-        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(fnd) + ' host names found')
-        print_output('info', '\nScan complete: ' + addressesMsg + ' | ' + hostsMsg)
-        if blnOutFile: print_output('info', '  Output file: ' + outputFile)
-    except Exception as ex:
-        print_output('error', ex)
-    finally:
-        if ('fileOut' in locals() and blnOutFile): fileOut.close()
-
-def determine_open_ports(ports, outputType, outputFile = '', ipv4Net = []):
-    try:
-        blnOutFile = (outputFile != '')
-        blnOutScreen = (outputType != 'f')
-        if blnOutFile: fileOut = open(outputFile, 'a')
-        if blnOutScreen: generate_screen_results(ports=ports, blnShowHostName=False, blnHeader=True)
-        i = 0
-        for net in ipv4Net:
-            for ipa in ipaddress.IPv4Network(net):
-                ipAddress = str(ipa)
-                hostName = ''
+        for ipAddress in ipAddresses:
+            portsStatus = []
+            if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress)
+            hostName = get_hostName_by_ip(ipAddress)
+            if (hostName.lower() != 'unknown') or ((hostName.lower() == 'unknown') and not blnSkipUnknown):
                 openPorts = ''
-                portsStatus = []
                 for port in ports:
                     if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress + ':' + str(port))
                     portOpen = get_port_status(ipAddress, port)
                     openPorts += (str(port) + ',' if portOpen else ',')
                     portsStatus.append(str(port) + '=open' if portOpen else str(port) + '=closed')
                 openPorts = openPorts.removesuffix(',')
-                if blnOutFile: fileOut.write(ipAddress + ',' + openPorts + '\n')
-                if blnOutScreen: generate_screen_results(ipAddress, hostName, portsStatus, blnShowHostName=False, blnHeader=False)
-                i += 1
+                if blnOutFile: fileOut.write(ipAddress + ',' + hostName + ',' + openPorts + '\n')
+                if blnOutScreen: generate_screen_results(ipAddress, hostName, portsStatus, blnShowHostName=True, blnHeader=False)
+                if (hostName.lower() != 'unknown'): fnd += 1
+            i += 1
+        addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
+        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(fnd) + ' host names found')
+        print_output('info', '\nScan complete: ' + addressesMsg + ' | ' + hostsMsg)
+        if blnOutFile: print_output('info', '  Output file: ' + outputFile)
+    except Exception as ex:
+        print_output('error', ex)
+    finally:
+        if ('fileOut' in locals() and blnOutFile): fileOut.close()
+
+def determine_host_names(ipAddresses, outputType, outputFile = '', blnSkipUnknown = True):
+    try:
+        blnOutFile = (outputFile != '')
+        blnOutScreen = (outputType != 'f')
+        if blnOutFile: fileOut = open(outputFile, 'a')
+        if blnOutScreen: generate_screen_results(blnShowHostName=True, blnHeader=True)
+        i, fnd = 0, 0
+        for ipAddress in ipAddresses:
+            if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress)
+            hostName = get_hostName_by_ip(ipAddress)
+            if (hostName.lower() != 'unknown') or ((hostName.lower() == 'unknown') and not blnSkipUnknown):
+                if blnOutFile: fileOut.write(ipAddress + ',' + hostName + '\n')
+                if blnOutScreen: generate_screen_results(ipAddress, hostName, blnShowHostName=True, blnHeader=False)
+                if (hostName.lower() != 'unknown'): fnd += 1
+            i += 1
+        addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
+        hostsMsg = (str(fnd) + ' host name found' if (i == 1) else str(fnd) + ' host names found')
+        print_output('info', '\nScan complete: ' + addressesMsg + ' | ' + hostsMsg)
+        if blnOutFile: print_output('info', '  Output file: ' + outputFile)
+    except Exception as ex:
+        print_output('error', ex)
+    finally:
+        if ('fileOut' in locals() and blnOutFile): fileOut.close()
+
+def determine_open_ports(ipAddresses, ports, outputType, outputFile = ''):
+    try:
+        blnOutFile = (outputFile != '')
+        blnOutScreen = (outputType != 'f')
+        if blnOutFile: fileOut = open(outputFile, 'a')
+        if blnOutScreen: generate_screen_results(ports=ports, blnShowHostName=False, blnHeader=True)
+        i = 0
+        for ipAddress in ipAddresses:
+            hostName = ''
+            openPorts = ''
+            portsStatus = []
+            for port in ports:
+                if not blnOutScreen: print_output('progress', '\nChecking: ' + ipAddress + ':' + str(port))
+                portOpen = get_port_status(ipAddress, port)
+                openPorts += (str(port) + ',' if portOpen else ',')
+                portsStatus.append(str(port) + '=open' if portOpen else str(port) + '=closed')
+            openPorts = openPorts.removesuffix(',')
+            if blnOutFile: fileOut.write(ipAddress + ',' + openPorts + '\n')
+            if blnOutScreen: generate_screen_results(ipAddress, hostName, portsStatus, blnShowHostName=False, blnHeader=False)
+            i += 1
         addressesMsg = (str(i) + ' address scanned' if (i == 1) else str(i) + ' addresses scanned')
         print_output('info', '\nScan complete: ' + addressesMsg)
         if blnOutFile: print_output('info', '  Output file: ' + outputFile)
@@ -246,6 +262,15 @@ def print_output(type, output=''):
     except Exception as ex:
         print(colours.RED + ex + colours.NONE)
 
+def menu_get_input_type():
+    try:
+        inType = ''
+        while inType not in ['k', 'f', 'b']:
+            inType = input('\nProvide IP address(es) by keyboard entry, input file, or both? [k/f/b]: ').strip().lower()
+        return inType
+    except Exception as ex:
+        print_output('error', ex)
+
 def menu_use_existing_ipv4net_as_input():
     try:
         blnUseExistingNet = False
@@ -256,6 +281,19 @@ def menu_use_existing_ipv4net_as_input():
         blnUseExistingNet = (useExistingNet == 'y')
         if blnUseExistingNet: print_output('valid', ipv4Net)
         return blnUseExistingNet
+    except Exception as ex:
+        print_output('error', ex)
+
+def menu_use_existing_file_as_input():
+    try:
+        blnUseExistingFile = False
+        useExistingFile = ''
+        while useExistingFile not in ['y', 'n']:
+            inputFile = INPUT_FILE
+            useExistingFile = input('\nUse existing input file (' + inputFile + ') as input for port scan? [y/n]: ').strip().lower()
+        blnUseExistingFile = (useExistingFile == 'y')
+        if blnUseExistingFile: print_output('valid', inputFile)
+        return blnUseExistingFile
     except Exception as ex:
         print_output('error', ex)
 
@@ -300,6 +338,21 @@ def menu_get_ipv4Net():
         global IPV4_NET
         IPV4_NET = ipv4Net
         return ipv4Net
+    except Exception as ex:
+        print_output('error', ex)
+
+def menu_get_input_file():
+    try:
+        inputFile = ''
+        blnValid = False
+        while not blnValid:
+            inputFile = input('\nInput file must contain 1 IP address per line.  Provide location/path for input file (ex: /home/user/input.txt): ').strip()
+            blnValid = validate_file(inputFile)
+            if not blnValid: print_output('error', 'Invalid location/path')
+        print_output('valid', inputFile)
+        global INPUT_FILE
+        INPUT_FILE = inputFile
+        return inputFile
     except Exception as ex:
         print_output('error', ex)
 
@@ -381,12 +434,21 @@ def menu_get_port_numbers():
 
 def menu_option_1():
     try:
-        ipv4Net = ''
-        if (len(IPV4_NET) > 0):
-            blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
-            ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
-        else:
-            ipv4Net = menu_get_ipv4Net()
+        inputType = menu_get_input_type()
+        if (inputType == 'b' or inputType == 'k'):
+            ipv4Net = ''
+            if (len(IPV4_NET) > 0):
+                blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
+                ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
+            else:
+                ipv4Net = menu_get_ipv4Net()
+        if (inputType == 'b' or inputType == 'f'):
+            inputFile = ''
+            if (len(INPUT_FILE) > 0):
+                blnUseExistingInputFile = menu_use_existing_file_as_input()
+                inputFile = (INPUT_FILE if blnUseExistingInputFile else menu_get_input_file())
+            else:
+                inputFile = menu_get_input_file()
         outputType = menu_get_output_type()
         if (outputType != 's'):
             outputDir = menu_get_output_dir()
@@ -396,18 +458,28 @@ def menu_option_1():
         global OUT_FILE_HOSTS
         OUT_FILE_HOSTS = outputFile
         blnSkipUnknown = menu_skip_unknown()
-        determine_host_names(ipv4Net, outputType, outputFile, blnSkipUnknown)
+        ipAddresses = generate_ipAddress_List(ipv4Net, inputFile)
+        determine_host_names(ipAddresses, outputType, outputFile, blnSkipUnknown)
     except Exception as ex:
         print_output('error', ex)
 
 def menu_option_2():
     try:
-        ipv4Net = ''
-        if (len(IPV4_NET) > 0):
-            blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
-            ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
-        else:
-            ipv4Net = menu_get_ipv4Net()
+        inputType = menu_get_input_type()
+        if (inputType == 'b' or inputType == 'k'):
+            ipv4Net = ''
+            if (len(IPV4_NET) > 0):
+                blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
+                ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
+            else:
+                ipv4Net = menu_get_ipv4Net()
+        if (inputType == 'b' or inputType == 'f'):
+            inputFile = ''
+            if (len(INPUT_FILE) > 0):
+                blnUseExistingInputFile = menu_use_existing_file_as_input()
+                inputFile = (INPUT_FILE if blnUseExistingInputFile else menu_get_input_file())
+            else:
+                inputFile = menu_get_input_file()
         outputType = menu_get_output_type()
         if (outputType != 's'):
             outputDir = menu_get_output_dir()
@@ -421,18 +493,28 @@ def menu_option_2():
             ports = (PORTS if blnUseExistingPorts else menu_get_port_numbers())
         else:
             ports = menu_get_port_numbers()
-        determine_open_ports(ports, outputType, outputFile, ipv4Net)
+        ipAddresses = generate_ipAddress_List(ipv4Net, inputFile)
+        determine_open_ports(ipAddresses, ports, outputType, outputFile)
     except Exception as ex:
         print_output('error', ex)
 
 def menu_option_3():
     try:
-        ipv4Net = ''
-        if (len(IPV4_NET) > 0):
-            blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
-            ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
-        else:
-            ipv4Net = menu_get_ipv4Net()
+        inputType = menu_get_input_type()
+        if (inputType == 'b' or inputType == 'k'):
+            ipv4Net = ''
+            if (len(IPV4_NET) > 0):
+                blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
+                ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
+            else:
+                ipv4Net = menu_get_ipv4Net()
+        if (inputType == 'b' or inputType == 'f'):
+            inputFile = ''
+            if (len(INPUT_FILE) > 0):
+                blnUseExistingInputFile = menu_use_existing_file_as_input()
+                inputFile = (INPUT_FILE if blnUseExistingInputFile else menu_get_input_file())
+            else:
+                inputFile = menu_get_input_file()
         outputType = menu_get_output_type()
         if (outputType != 's'):
             outputDir = menu_get_output_dir()
@@ -447,7 +529,8 @@ def menu_option_3():
             ports = (PORTS if blnUseExistingPorts else menu_get_port_numbers())
         else:
             ports = menu_get_port_numbers()
-        determine_host_names_open_ports(ipv4Net, ports, outputType, outputFile, blnSkipUnknown)
+        ipAddresses = generate_ipAddress_List(ipv4Net, inputFile)
+        determine_host_names_open_ports(ipAddresses, ports, outputType, outputFile=outputFile, blnSkipUnknown=blnSkipUnknown)
     except Exception as ex:
         print_output('error', ex)
 
@@ -463,7 +546,7 @@ def main_menu():
         print_output('banner')
         print_output('menu')
         menuOption = ''
-        while menuOption not in ['1', '2', '3', '4', 'q', 'Q']:
+        while menuOption not in ['1', '2', '3', '4', 'q']:
              menuOption = input('\nEnter a selection from the menu: ').strip().lower()
         if (menuOption == '1'):
             menu_option_1()
