@@ -99,7 +99,7 @@ def generate_ipv4_network_IP(begIpAddress, endIpAddress):
 def generate_ipAddress_List(ipv4Net = [], inputFile = ''):
     try:
         ipAddresses = []
-        if len(ipv4Net > 0):
+        if (len(ipv4Net) > 0):
             for net in ipv4Net:
                 for ipa in ipaddress.IPv4Network(net):
                     ipAddresses.append(str(ipa))
@@ -435,15 +435,16 @@ def menu_get_port_numbers():
 def menu_option_1():
     try:
         inputType = menu_get_input_type()
+        ipv4Net = ''
+        inputFile = ''
+        outputFile = ''
         if (inputType == 'b' or inputType == 'k'):
-            ipv4Net = ''
             if (len(IPV4_NET) > 0):
                 blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
                 ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
             else:
                 ipv4Net = menu_get_ipv4Net()
         if (inputType == 'b' or inputType == 'f'):
-            inputFile = ''
             if (len(INPUT_FILE) > 0):
                 blnUseExistingInputFile = menu_use_existing_file_as_input()
                 inputFile = (INPUT_FILE if blnUseExistingInputFile else menu_get_input_file())
@@ -466,15 +467,16 @@ def menu_option_1():
 def menu_option_2():
     try:
         inputType = menu_get_input_type()
+        ipv4Net = ''
+        inputFile = ''
+        outputFile = ''
         if (inputType == 'b' or inputType == 'k'):
-            ipv4Net = ''
             if (len(IPV4_NET) > 0):
                 blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
                 ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
             else:
                 ipv4Net = menu_get_ipv4Net()
         if (inputType == 'b' or inputType == 'f'):
-            inputFile = ''
             if (len(INPUT_FILE) > 0):
                 blnUseExistingInputFile = menu_use_existing_file_as_input()
                 inputFile = (INPUT_FILE if blnUseExistingInputFile else menu_get_input_file())
@@ -501,15 +503,16 @@ def menu_option_2():
 def menu_option_3():
     try:
         inputType = menu_get_input_type()
+        ipv4Net = ''
+        inputFile = ''
+        outputFile = ''
         if (inputType == 'b' or inputType == 'k'):
-            ipv4Net = ''
             if (len(IPV4_NET) > 0):
                 blnUseExistingIPv4Net = menu_use_existing_ipv4net_as_input()
                 ipv4Net = (IPV4_NET if blnUseExistingIPv4Net else menu_get_ipv4Net())
             else:
                 ipv4Net = menu_get_ipv4Net()
         if (inputType == 'b' or inputType == 'f'):
-            inputFile = ''
             if (len(INPUT_FILE) > 0):
                 blnUseExistingInputFile = menu_use_existing_file_as_input()
                 inputFile = (INPUT_FILE if blnUseExistingInputFile else menu_get_input_file())
