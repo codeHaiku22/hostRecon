@@ -1,5 +1,5 @@
 # hostRecon 1.1
-This is Python based comman line interface (CLI) application to determine host names and open ports.
+This is Python-based comman line interface (CLI) application to determine host names and open ports.
 
 ## Features
 - Target IP addresses can be provided individually, as a range, using CIDR notation, and from an input file.
