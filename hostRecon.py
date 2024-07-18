@@ -241,7 +241,7 @@ def print_output(type, output=''):
             prefix = '\n' + ':'*40 + '[ '
             suffix = ' ]' + ':'*40
             output = prefix + application.NAME + ' ' + application.VERSION + suffix
-            print(colours.CYAN + output + colours.NONE)
+            print(colours.CYAN + str(output) + colours.NONE)
             caption = 'The hostRecon utility can be used to obtain host names and to determine whether certain ports are \nopen or closed given a set of IP addresses and port numbers.  Results can be written to csv file.'
             print(colours.CYAN + caption + colours.NONE)
         if (type.lower() == 'menu'):
@@ -250,15 +250,15 @@ def print_output(type, output=''):
             menuOptions = '1. Obtain host names by IP address/range\n2. Check for specified open ports\n3. Obtain host names and open ports\n4. Quit'
             print(colours.CYAN + menuOptions + colours.NONE)
         if (type.lower() == 'error'):
-            print(colours.RED + output + colours.NONE)
+            print(colours.RED + str(output) + colours.NONE)
         if (type.lower() == 'info'):
-            print(colours.YELLOW + output + colours.NONE)
+            print(colours.YELLOW + str(output) + colours.NONE)
         if (type.lower() == 'plain'):
-            print(colours.NONE + output + colours.NONE)
+            print(colours.NONE + str(output) + colours.NONE)
         if (type.lower() == 'progress'):
-            print(colours.MAGENTA + output + colours.NONE, end='\r', flush=True)
+            print(colours.MAGENTA + str(output) + colours.NONE, end='\r', flush=True)
         if (type.lower() == 'valid'):
-            print(colours.GREEN + output + colours.NONE)
+            print(colours.GREEN + str(output) + colours.NONE)
     except Exception as ex:
         print(colours.RED + ex + colours.NONE)
 
